@@ -1,0 +1,19 @@
+name: Run Groq Script
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  run-groq:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install groq
+      - run: python inference_groq_2.ipynb
