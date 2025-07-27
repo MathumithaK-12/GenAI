@@ -77,6 +77,7 @@ Implementing github actions for Inference of LlaMa model using Groq API
 Use Case - AI powered ITSM Analyst 
 
 Purpose
+
  -> Identify known printing errors
  -> Respond with appropriate workarounds
  -> Request missing information (like order ID, container ID)
