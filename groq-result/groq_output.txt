@@ -1,0 +1,30 @@
+Here is a user requirement for a password reset feature:
+
+**User Requirement: Password Reset**
+
+**User Story:** As a registered user, I want to be able to reset my password in case I forget it, so that I can regain access to my account.
+
+**Functional Requirements:**
+
+1. **Forgot Password Link**: The user should be able to access a "Forgot Password" link on the login page.
+2. **Username/Input Field**: When the user clicks on the "Forgot Password" link, they should be prompted to enter their username or email address associated with their account.
+3. **Password Reset Token**: Upon entering their username or email address, the system should generate a unique password reset token and send it to the user's registered email address.
+4. **Password Reset Link**: The password reset token should be embedded in a link that is sent to the user's email address. The link should be valid for a limited time only (e.g., 30 minutes).
+5. **New Password Entry**: When the user clicks on the password reset link, they should be redirected to a page where they can enter a new password.
+6. **Password Confirmation**: The user should be required to confirm their new password by re-entering it in a separate field.
+7. **Password Update**: If the new password and confirmation match, the system should update the user's password and notify them that their password has been successfully reset.
+
+**Non-Functional Requirements:**
+
+1. **Security**: The password reset process should ensure that the user's password is reset securely, without exposing their account to unauthorized access.
+2. **Usability**: The password reset process should be easy to use and understand, with clear instructions and minimal steps required to reset the password.
+3. **Timeliness**: The password reset token should expire after a reasonable period of time (e.g., 30 minutes) to prevent reuse.
+
+**Acceptance Criteria:**
+
+1. The user can access the "Forgot Password" link on the login page.
+2. The user can enter their username or email address and receive a password reset token via email.
+3. The user can click on the password reset link and enter a new password, which is confirmed by re-entering it.
+4. The user's password is updated successfully, and they are notified of the change.
+
+By meeting these requirements, the password reset feature should provide a secure, user-friendly, and efficient way for users to regain access to their accounts when they forget their passwords.
