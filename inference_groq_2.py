@@ -19,5 +19,15 @@ response = client.chat.completions.create(
     temperature=0.7,
 )
 
-# Print the result
-print(response.choices[0].message.content)
+# Extract the response text
+output_text = response.choices[0].message.content
+
+# Print to console
+print("Groq response:\n", output_text)
+
+# Save to file
+output_file = "groq_output.txt"
+with open(output_file, "w", encoding="utf-8") as f:
+    f.write(output_text)
+
+print(f"\nOutput written to: {output_file}")
