@@ -1,13 +1,13 @@
 # .github/workflows/groq-inference.yml
 
-name: Run Groq Script (on groq_inference_2.ipynb changes)
+name: Run Groq Script (on inference_groq_2.ipynb changes)
 
 on:
   push:
     branches:
       - main
     paths:
-      - groq_inference_2.ipynb  # Trigger only if this notebook is changed
+      - inference_groq_2.ipynb  # Trigger only if this notebook is changed
 
   workflow_dispatch:  # Optional: allow manual run from GitHub UI
 
@@ -31,7 +31,7 @@ jobs:
         run: pip install groq nbconvert
 
       - name: Convert notebook to script
-        run: jupyter nbconvert --to script groq_inference_2.ipynb
+        run: jupyter nbconvert --to script inference_groq_2.ipynb
 
       - name: Run converted script
-        run: python groq_inference_2.py
+        run: python inference_groq_2.py
