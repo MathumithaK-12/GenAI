@@ -1,4 +1,4 @@
-23rd july
+✅ 23rd july
 Invoking a model (LlaMA) by inferencing using groq api
 
 steps
@@ -14,7 +14,7 @@ https://console.groq.com
 
 
 
-24th july
+✅ 24th july
 
 Use case preparation
 AI support analyst for CMS pack failures
@@ -47,4 +47,28 @@ Give a detailed step by by step procedure to achieve the end goal
 If the user just says they are facing issue with printing
 But not given any order id or container 
 Will the agent ask for the details
+
+
+✅ 27 July 2025
+Implementing github actions for Inference of LlaMa model using Groq API 
+1. Add the python script for inferencing the LlaMa model using Groq.
+   1.1 The output should be saved in a file
+   -> Path to python code - https://github.com/MathumithaK-12/GenAI/blob/main/inference_groq_2.py
+2. Create GitHub Actions Workflow
+   2.1 The action will be triggered only if there is push to the python script
+   2.2 Or the action is triggered manually
+   2.3 The output will be stored as downloadable (.zip) file in the artifact
+   -> Path to yml file - https://github.com/MathumithaK-12/GenAI/blob/main/.github/workflows/groq-inference.yml
+3. Add Secret to GitHub
+   3.1 - Go to your repository → Settings → Secrets and variables → Actions
+   3.2 - Click New repository secret
+         Name: GROQ_API_KEY
+         Value: your actual Groq API key
+4. Trigger the Workflow
+   4.1 Go to the Actions tab in GitHub
+   4.2 Select "Run Groq Inference"
+   4.3 Click "Run workflow"
+5. After a successful run, scroll to the bottom of the latest run and Download the artifact groq-result, which will contain your Groq output.
+
+
 
