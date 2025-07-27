@@ -1,19 +1,37 @@
-name: Run Groq Script
+# .github/workflows/groq-inference.yml
+
+name: Run Groq Script (on groq_inference_2.ipynb changes)
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+    paths:
+      - groq_inference_2.ipynb  # Trigger only if this notebook is changed
+
+  workflow_dispatch:  # Optional: allow manual run from GitHub UI
 
 jobs:
   run-groq:
     runs-on: ubuntu-latest
+
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - run: pip install groq
-      - run: python inference_groq_2.ipynb
+
+      - name: Install dependencies
+        run: pip install groq nbconvert
+
+      - name: Convert notebook to script
+        run: jupyter nbconvert --to script groq_inference_2.ipynb
+
+      - name: Run converted script
+        run: python groq_inference_2.py
