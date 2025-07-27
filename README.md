@@ -69,6 +69,6 @@ Implementing github actions for Inference of LlaMa model using Groq API
    4.2 Select "Run Groq Inference"
    4.3 Click "Run workflow"
 5. After a successful run, scroll to the bottom of the latest run and Download the artifact groq-result, which will contain your Groq output.
-
+   -> Path to the sample output of the prompt (Write a user requirement for password reset.) - https://github.com/MathumithaK-12/GenAI/blob/main/groq-result/groq_output.txt
 
 
