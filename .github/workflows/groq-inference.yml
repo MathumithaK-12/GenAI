@@ -32,3 +32,9 @@ jobs:
 
       - name: Run converted script
         run: python inference_groq_2.py
+
+      - name: Upload output as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: groq-result
+          path: groq_output.txt
