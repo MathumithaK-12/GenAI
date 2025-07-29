@@ -1,4 +1,6 @@
 import os
+import json
+import re
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -9,6 +11,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY)
 
 LLM_MODEL = "llama3-8b-8192"
+
 
 def ask_llm(prompt, system_prompt="You are a helpful IT support assistant. Be natural and concise."):
     """Generic LLM call using Groq-hosted LLaMA."""
@@ -24,51 +27,67 @@ def ask_llm(prompt, system_prompt="You are a helpful IT support assistant. Be na
 
 
 def extract_ids(message):
-    """Use LLM to extract order ID and/or container ID from user message."""
+    """
+    Use LLM to extract order ID and/or container ID from user message.
+    Fallback to regex if LLM fails or returns bad format.
+    """
     prompt = f"""
-You are a support agent. Extract Order ID or Container ID from this message:
+You are a support agent. Extract Order ID and/or Container ID from this message:
 "{message}"
 
-Return JSON with the format: {{
-  "order_id": "ORD-1234" or null,
-  "container_id": "CONT-5678" or null
+Return a JSON like:
+{{
+  "order_id": "ORD123" or null,
+  "container_id": "CONT456" or null
 }}. 
-Only extract if present.
+Only include fields if the ID is actually present.
+If neither is found, return: {{}}
 """
+
     try:
-        import json
-        result = ask_llm(prompt, system_prompt="You are an expert data extractor.")
-        parsed = json.loads(result)
-        return {
-            "order_id": parsed.get("order_id"),
-            "container_id": parsed.get("container_id")
-        }
+        response = ask_llm(prompt, system_prompt="You are an expert data extractor. Respond ONLY with JSON.")
+        json_str = re.search(r'\{.*\}', response)
+        if json_str:
+            parsed = json.loads(json_str.group())
+            return {
+                "order_id": parsed.get("order_id"),
+                "container_id": parsed.get("container_id")
+            }
     except Exception as e:
-        return {"order_id": None, "container_id": None}
+        print("⚠️ LLM ID extraction failed, trying regex...")
+
+    # Fallback to regex extraction
+    order_match = re.search(r'\bORD[-]?\d+\b', message, re.IGNORECASE)
+    container_match = re.search(r'\bCONT[-]?\d+\b', message, re.IGNORECASE)
+
+    return {
+        "order_id": order_match.group().upper() if order_match else None,
+        "container_id": container_match.group().upper() if container_match else None
+    }
 
 
 def request_missing_id(order_id, container_id):
     """Ask user for missing order/container ID using LLM phrasing."""
     if not order_id and not container_id:
-        prompt = "The user hasn't provided any Order ID or Container ID. Ask politely for one of them to proceed."
+        prompt = "The user hasn't provided any Order ID or Container ID. Ask them politely to share either one so we can assist."
     elif not order_id:
-        prompt = "The user didn't provide the Order ID. Ask naturally for the Order ID."
+        prompt = "The user didn't provide an Order ID. Ask them kindly to share it."
     elif not container_id:
-        prompt = "The user didn't provide the Container ID. Ask naturally for the Container ID."
+        prompt = "The user didn't provide a Container ID. Ask them kindly to share it."
     else:
         return None  # Nothing missing
 
-    return ask_llm(prompt)
+    return ask_llm(prompt, system_prompt="You are a polite support assistant.")
 
 
-def phrase_workaround(issue_label, workaround_text):
+def phrase_workaround(workaround_text):
     """Phrase a known workaround using LLM for a more natural response."""
     prompt = f"""
-We identified this issue: "{issue_label}".
+We identified an issue with the provided order or container.
 
 The workaround is: "{workaround_text}".
 
-Write a helpful, polite sentence suggesting this workaround to the user, as if you're a friendly IT support chatbot.
+Write a helpful, polite message suggesting this workaround to the user as if you're a friendly support chatbot.
 """
     return ask_llm(prompt)
 
