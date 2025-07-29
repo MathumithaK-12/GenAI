@@ -14,6 +14,8 @@ from db_interface import (
     update_incident_status
 )
 
+from email_utils import send_email_to_it
+
 
 def handle_user_message(user_input, session_state):
     # Initialize session state if not present
@@ -87,22 +89,28 @@ def handle_user_message(user_input, session_state):
 def handle_user_confirmation(user_input, session_state):
     result = interpret_user_confirmation(user_input)
 
-    if result == "yes":
+    if result == "success":
         update_incident_status(session_state["incident_id"], "Resolved")
         session_state["status"] = "Resolved"
+        session_state["awaiting_user_confirmation"] = False
         return (
             "Great! I'm glad that resolved your issue. Let me know if you need help with anything else.",
             session_state
         )
 
-    elif result == "no":
+    elif result == "failure":
         update_incident_status(session_state["incident_id"], "Open")
         summary = (
             f"User confirmed workaround failed for Order {session_state['order_id'] or ''} / "
             f"Container {session_state['container_id'] or ''}."
         )
         email_body = draft_email_content(summary)
+        send_email_to_it(
+        subject="Escalation: Order/Container Issue",
+        body=email_body
+        )
         session_state["status"] = "EscalatedToIT"
+        session_state["awaiting_user_confirmation"] = False
         return (
             "Thanks for confirming. I've escalated this to our IT team for further investigation.\n\n" + email_body,
             session_state
