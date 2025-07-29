@@ -8,10 +8,10 @@ load_dotenv()
 
 def connect_db():
     return mysql.connector.connect(
-        host=os.getenv("MYSQL_HOST"),
-        user=os.getenv("MYSQL_USER"),
-        password=os.getenv("MYSQL_PASSWORD"),
-        database=os.getenv("MYSQL_DB")
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
     )
 
 
@@ -20,11 +20,14 @@ def get_latest_log(order_id=None, container_id=None):
     cursor = conn.cursor(dictionary=True)
 
     if order_id:
-        cursor.execute("SELECT * FROM cms_logs WHERE order_id = %s ORDER BY response_ts DESC LIMIT 1", (order_id,))
+        cursor.execute("SELECT * FROM cms_logs WHERE order_id = %s ORDER BY response_timestamp DESC LIMIT 1", (order_id,))
     elif container_id:
-        cursor.execute("SELECT * FROM cms_logs WHERE container_id = %s ORDER BY response_ts DESC LIMIT 1", (container_id,))
+        cursor.execute("SELECT * FROM cms_logs WHERE container_id = %s ORDER BY response_timestamp DESC LIMIT 1", (container_id,))
     else:
         return None
+
+    print("ORDER ID:", order_id)
+    print("CONTAINER ID:", container_id)
 
     result = cursor.fetchone()
     conn.close()
@@ -35,7 +38,7 @@ def find_known_failure_match(response_payload):
     conn = connect_db()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT label, pattern, workaround FROM known_failures")
+    cursor.execute("SELECT pattern, workaround FROM known_failures")
     failures = cursor.fetchall()
 
     for failure in failures:
@@ -70,9 +73,9 @@ def update_incident_status(incident_id, status):
 
     cursor.execute("""
         UPDATE incident_logs
-        SET status = %s, updated_at = %s
+        SET status = %s
         WHERE incident_id = %s
-    """, (status, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), incident_id))
+    """, (status, incident_id))  # ✅ Removed updated_at
 
     conn.commit()
     conn.close()
