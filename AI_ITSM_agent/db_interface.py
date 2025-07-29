@@ -40,12 +40,16 @@ def find_known_failure_match(response_payload):
 
     cursor.execute("SELECT pattern, workaround FROM known_failures")
     failures = cursor.fetchall()
+    conn.close()
 
     for failure in failures:
-        if failure["pattern"].lower() in response_payload.lower():
+        # Strip SQL wildcards like '%' and make it lowercase
+        cleaned_pattern = failure["pattern"].replace('%', '').strip().lower()
+        # Check if the cleaned pattern is in the payload
+        if cleaned_pattern in response_payload.lower():
             return failure
 
-    conn.close()
+    
     return None
 
 
