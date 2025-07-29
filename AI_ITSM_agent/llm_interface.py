@@ -110,7 +110,7 @@ Issue summary:
 Identifiers:
 {ids}
 
-Keep it short, formal, and clear. End with a request for IT to investigate and resolve.
+Keep it short, simple, formal, and clear. End with a request for IT to investigate and resolve. Just add Best Regards, IT Support Agent at end.
 """
     return ask_llm(prompt)
 
