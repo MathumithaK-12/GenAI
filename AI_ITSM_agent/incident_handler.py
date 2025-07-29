@@ -1,9 +1,3 @@
-from db_interface import (
-    get_latest_log,
-    log_incident,
-    update_incident_status,
-    find_known_failure_match
-)
 from llm_interface import (
     ask_llm,
     extract_ids,
@@ -12,101 +6,107 @@ from llm_interface import (
     draft_email_content,
     interpret_user_confirmation
 )
-from email_utils import send_email_to_it
+
+from db_interface import (
+    get_latest_log,
+    find_known_failure_match,
+    log_incident,
+    update_incident_status
+)
 
 
-def handle_user_message(user_message, session_state):
-    # Step 1: Extract order_id or container_id from user input (if not already present)
-    if not session_state.get("order_id") and not session_state.get("container_id"):
-        ids = extract_ids(user_message)
-        session_state.update(ids)
+def handle_user_message(user_input, session_state):
+    # Initialize session state if not present
+    if not session_state:
+        session_state = {
+            "incident_id": None,
+            "order_id": None,
+            "container_id": None,
+            "status": None
+        }
 
-    # Step 2: Prompt if still missing ID
-    if not session_state.get("order_id") and not session_state.get("container_id"):
-        return request_missing_id(
-            order_id=session_state.get("order_id"),
-            container_id=session_state.get("container_id")
-        ), session_state
+    # Extract IDs if not already set
+    if not session_state["order_id"] and not session_state["container_id"]:
+        extracted = extract_ids(user_input)
+        session_state["order_id"] = extracted.get("order_id")
+        session_state["container_id"] = extracted.get("container_id")
 
-    # Step 3: Raise incident (move to In Progress)
-    if not session_state.get("incident_id"):
-        session_state["incident_id"] = log_incident(
-            session_state.get("order_id"),
-            session_state.get("container_id"),
-            "Auto-detected failure, pending root cause"
+    # If still missing, ask the user naturally
+
+    order_id = session_state["order_id"]
+    container_id = session_state["container_id"]
+
+    if not order_id and not container_id:
+        prompt = request_missing_id(order_id, container_id)
+        return prompt, session_state
+
+    # Check if logs exist
+    latest_log = get_latest_log(order_id=order_id, container_id=container_id)
+    if not latest_log:
+        return (
+            f"I couldn't find any recent activity for the given "
+            f"{'order ID' if order_id else 'container ID'}. "
+            f"Could you double-check the ID and try again?",
+            session_state
         )
-        update_incident_status(session_state["incident_id"], "In Progress")
 
-    # Step 4: Fetch latest log for that ID
-    log = get_latest_log(
-        order_id=session_state.get("order_id"),
-        container_id=session_state.get("container_id")
-    )
+    # Log the incident if not already logged
+    if not session_state["incident_id"]:
+        summary = f"Issue with Order {order_id}" if order_id else f"Issue with Container {container_id}"
+        incident_id = log_incident(order_id, container_id, summary)
+        session_state["incident_id"] = incident_id
+        session_state["status"] = "In Progress"
 
-    if not log:
-        return "I couldn't find any related logs for the provided ID. Please double-check and try again.", session_state
+    update_incident_status(session_state["incident_id"], "In Progress")
 
-    session_state["last_log"] = log
+    # Match against known failure
+    response_payload = latest_log["response_xml"]
+    match = find_known_failure_match(response_payload)
 
-    # Step 5: If status is success, no action needed
-    if log["status"].lower() == "success":
-        return "The operation seems to have completed successfully. You may try again or let me know if you're still facing issues.", session_state
-
-    # Step 6: Check for known failure match
-    known_issue = find_known_failure_match(log["response_payload"])
-    if known_issue:
-        session_state["matched_label"] = known_issue["label"]
-        session_state["known_workaround"] = known_issue["workaround"]
-        workaround = phrase_workaround(known_issue["workaround"])
+    if match:
+        # Use LLM to phrase workaround naturally
+        phrased_response = phrase_workaround(match["workaround"])
         session_state["awaiting_user_confirmation"] = True
-        return workaround + "\n\nCan you please try that and let me know if it works?", session_state
+        return phrased_response, session_state
 
-    # Step 7: Unknown failure — escalate to IT
-    update_incident_status(session_state["incident_id"], "Open")
-    email_body = draft_email_content(user_message, session_state)
-    send_email_to_it(
-        subject=f"Incident Escalation - Issue with Order {session_state.get('order_id') or session_state.get('container_id')}",
-        body=email_body
-    )
-    session_state["escalated"] = True
-    return (
-        "I couldn't resolve this issue automatically. I've escalated it to the IT team and logged an incident for tracking.\n\n"
-        "They’ll reach out to you shortly.",
-        session_state
-    )
+    else:
+        # Unknown issue – escalate
+        summary = (
+            f"Issue reported for Order {order_id or ''} / Container {container_id or ''}. "
+            "No known pattern matched."
+        )
+        email_body = draft_email_content(summary, response_payload)
+        session_state["status"] = "EscalatedToIT"
+        return (
+            "I'm unable to resolve this with known workarounds. I've escalated the issue to our IT team. "
+            "They’ll look into it shortly.\n\n" + email_body,
+            session_state
+        )
 
 
-def handle_user_confirmation(user_reply, session_state):
-    # Interpret LLM-based user confirmation reply
-    outcome = interpret_user_confirmation(user_reply)
+def handle_user_confirmation(user_input, session_state):
+    result = interpret_user_confirmation(user_input)
 
-    if outcome == "success":
+    if result == "yes":
         update_incident_status(session_state["incident_id"], "Resolved")
-        session_state["awaiting_user_confirmation"] = False
+        session_state["status"] = "Resolved"
         return (
-            "Awesome! I've marked the incident as resolved. Glad we could help. Let me know if you need anything else!",
+            "Great! I'm glad that resolved your issue. Let me know if you need help with anything else.",
             session_state
         )
 
-    elif outcome == "failure":
+    elif result == "no":
         update_incident_status(session_state["incident_id"], "Open")
-        email_body = draft_email_content(
-            "User confirmed that the suggested workaround didn’t help. " + user_reply,
-            session_state
+        summary = (
+            f"User confirmed workaround failed for Order {session_state['order_id'] or ''} / "
+            f"Container {session_state['container_id'] or ''}."
         )
-        send_email_to_it(
-            subject=f"Follow-up Escalation - Workaround Failed for {session_state.get('order_id') or session_state.get('container_id')}",
-            body=email_body
-        )
-        session_state["escalated"] = True
-        session_state["awaiting_user_confirmation"] = False
+        email_body = draft_email_content(summary)
+        session_state["status"] = "EscalatedToIT"
         return (
-            "Thanks for trying. Since that didn’t work, I’ve escalated the issue to the IT team. They’ll investigate and follow up with you soon.",
+            "Thanks for confirming. I've escalated this to our IT team for further investigation.\n\n" + email_body,
             session_state
         )
 
     else:
-        return (
-            "Just to clarify — did the workaround help resolve the issue? Please let me know with a quick 'yes' or 'no'.",
-            session_state
-        )
+        return "Just to confirm, did the workaround resolve the issue? Please reply with yes or no.", session_state
