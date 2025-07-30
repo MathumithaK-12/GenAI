@@ -1,0 +1,137 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  body {
+    transition: background 0.5s, color 0.5s;
+  }
+  
+  /* Light & Dark Backgrounds */
+  .app-container {
+    min-height: 100vh;
+    background: linear-gradient(to right, #e3f2fd, #ffffff);
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  .app-container.dark {
+    background: linear-gradient(to right, #1e1e2f, #2d2d44);
+    color: #fff;
+  }
+  
+  /* Header */
+  .app-header {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    animation: slideDown 0.6s ease-out;
+  }
+  
+  .app-header h1 {
+    font-weight: 600;
+    font-size: 2rem;
+  }
+  
+  .dark-toggle {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.3s;
+    color: inherit;
+  }
+  
+  /* Main Content */
+  .main-content {
+    text-align: center;
+    margin-top: 3rem;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  .prompt-text {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    justify-content: center;
+    padding-top: 60px;
+  }
+  
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .rounded-button {
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #1976d2;
+    color: white;
+    transition: transform 0.2s, background-color 0.3s;
+  }
+  
+  .rounded-button:hover {
+    transform: scale(1.05);
+    background-color: #125ca1;
+  }
+  
+  /* Chat Screen */
+  .chat-screen {
+    animation: fadeInUp 0.7s ease-in-out;
+    max-width: 800px;
+    width: 100%;
+    margin-top: 3rem;
+    text-align: center;
+  }
+  
+  .chat-screen h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .end-chat-btn {
+    margin-top: 2rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 25px;
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .end-chat-btn:hover {
+    background-color: #9a1e1e;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
