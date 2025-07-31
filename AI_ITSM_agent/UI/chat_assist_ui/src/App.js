@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import './App.css';
 import ChatScreen from './ChatScreen';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaMoon, FaSun } from 'react-icons/fa';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode(prev => !prev);
+  };
 
   const handleStartChat = () => {
     setChatStarted(true);
@@ -17,25 +21,28 @@ function App() {
 
   return (
     <div className={`app-container ${darkMode ? 'dark' : ''}`}>
-      <div className="app-header">
+      <header className="app-header">
         <h1>Chat Assistant</h1>
-        <button className="dark-toggle" onClick={() => setDarkMode(!darkMode)}>
+        <button className="dark-toggle" onClick={toggleDarkMode}>
           {darkMode ? <FaSun /> : <FaMoon />}
         </button>
-      </div>
+      </header>
 
-      {chatStarted ? (
-        <ChatScreen onEndChat={handleEndChat} />
-      ) : (
-        <div className="main-content">
+      {!chatStarted ? (
+        <main className="main-content">
           <div className="prompt-text">How can I help you today?</div>
           <div className="button-group">
-            <button className="rounded-button" onClick={handleStartChat}>Packing ITSM Assist</button>
-            <button className="rounded-button" onClick={handleStartChat}>HSN code Assist</button>
-            <button className="rounded-button" onClick={handleStartChat}>Location Creation Assist</button>
+            <button className="rounded-button" onClick={handleStartChat}>Pack ITSM Assist</button>
+            <button className="rounded-button" onClick={handleStartChat}>Health Check Assist</button>
+            <button className="rounded-button" onClick={handleStartChat}>HSM Code Assist</button>
+            <button className="rounded-button" onClick={handleStartChat}>Location Assist</button>
             <button className="rounded-button" onClick={handleStartChat}>User Creation Assist</button>
-            <button className="rounded-button" onClick={handleStartChat}>WMS Design Assist</button>
+            <button className="rounded-button" onClick={handleStartChat}>Design Assist</button>
           </div>
+        </main>
+      ) : (
+        <div className="chat-wrapper">
+          <ChatScreen onEndChat={handleEndChat} darkMode={darkMode}/>
         </div>
       )}
     </div>
