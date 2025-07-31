@@ -36,8 +36,13 @@ body {
 }
 
 .app-header h1 {
-  font-size: 2rem;
-  font-weight: 600;
+  color: #333;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.app-header.dark h1 {
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.568);
 }
 
 .dark-toggle {
@@ -62,26 +67,33 @@ body {
 }
 
 .button-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  justify-items: center;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 4rem auto;
 }
 
 .rounded-button {
-  padding: 1rem 2rem;
-  border-radius: 30px;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  background-color: #1976d2;
+  padding: 14px 28px;
+  margin: 1rem;
+  background-color: #4a90e2; /* Primary color */
   color: white;
-  transition: transform 0.2s, background-color 0.3s;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(74, 144, 226, 0.5); /* Soft glow */
+  transition: box-shadow 0.3s ease, transform 0.2s ease, background-color 0.3s ease;
 }
 
 .rounded-button:hover {
-  transform: scale(1.05);
-  background-color: #125ca1;
+  background-color: #357ABD;
+  box-shadow: 0 0 20px rgba(74, 144, 226, 0.9); /* Brighter glow */
+  transform: translateY(-2px); /* Slight lift effect */
 }
 
 .chat-wrapper {
