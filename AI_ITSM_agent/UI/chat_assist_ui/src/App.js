@@ -21,7 +21,7 @@ function App() {
 
   return (
     <div className={`app-container ${darkMode ? 'dark' : ''}`}>
-      <header className="app-header">
+      <header className={`app-header ${darkMode ? 'dark' : ''}`}>
         <h1>Chat Assistant</h1>
         <button className="dark-toggle" onClick={toggleDarkMode}>
           {darkMode ? <FaSun /> : <FaMoon />}
