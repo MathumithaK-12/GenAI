@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ChatScreen.css';
 import { FaPaperPlane } from 'react-icons/fa';
 
-const ChatScreen = ({ onEndChat }) => {
+const ChatScreen = ({ onEndChat, darkMode }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
-    const newMessages = [...messages, { sender: 'user', text: input }];
-    setMessages(newMessages);
+
+    const userMsg = { sender: 'user', text: input };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+
+    if (showWelcome) setShowWelcome(false);
+
+    // Simulate assistant typing
+    setIsTyping(true);
+    const typingPlaceholder = { sender: 'assistant', text: 'typing...', isTyping: true };
+    setMessages(prev => [...prev, typingPlaceholder]);
 
     setTimeout(() => {
-      setMessages(prev => [...prev, { sender: 'assistant', text: "Got it! I'm processing your request..." }]);
-    }, 500);
-
-    setInput('');
-    if (showWelcome) {
-      setShowWelcome(false);
-    }
+      setMessages(prev => [
+        ...prev.slice(0, -1), // remove 'typing...'
+        {
+          sender: 'assistant',
+          text: "Thanks! Let me check that for you.",
+          delayed: true,
+        },
+      ]);
+      setIsTyping(false);
+    }, 1500);
   };
 
   const handleKeyPress = e => {
     if (e.key === 'Enter') handleSend();
   };
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping]);
+
   return (
-    <div className="chat-screen">
+    <div className={`chat-screen ${darkMode ? 'dark' : ''}`}>
       {showWelcome && (
         <div className="welcome-banner">
           <h2>Welcome to Chat Mode</h2>
@@ -39,11 +59,21 @@ const ChatScreen = ({ onEndChat }) => {
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`chat-bubble ${msg.sender === 'user' ? 'user-msg' : 'assistant-msg'}`}
+            className={`chat-bubble ${msg.sender === 'user' ? 'user-msg' : 'assistant-msg'} ${
+              msg.delayed ? 'delayed-appear' : ''
+            }`}
+            style={{ animationDelay: msg.delayed ? `${idx * 0.1}s` : '0s' }}
           >
-            {msg.text}
+            {msg.isTyping ? (
+              <span className="typing-dots">
+                <span>.</span><span>.</span><span>.</span>
+              </span>
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="chat-input-container">
