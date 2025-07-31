@@ -1,0 +1,7 @@
+python-dotenv
+mysql-connector-python
+requests
+groq
+fastapi
+uvicorn
+python-dotenv
