@@ -6,36 +6,56 @@ const ChatScreen = ({ onEndChat, darkMode }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+  //const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
-
+  
     const userMsg = { sender: 'user', text: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
-
+  
     if (showWelcome) setShowWelcome(false);
-
-    // Simulate assistant typing
-    setIsTyping(true);
-    const typingPlaceholder = { sender: 'assistant', text: 'typing...', isTyping: true };
+  
+    // Add animated typing placeholder
+    const typingPlaceholder = {
+      id: Date.now(),
+      sender: 'assistant',
+      text: '',
+      isTyping: true,
+    };
     setMessages(prev => [...prev, typingPlaceholder]);
-
+  
+    const assistantReply = "Thanks! Let me check that for you.";
+    const characters = assistantReply.split("");
+    let currentText = "";
+    const msgId = typingPlaceholder.id;
+  
     setTimeout(() => {
-      setMessages(prev => [
-        ...prev.slice(0, -1), // remove 'typing...'
-        {
-          sender: 'assistant',
-          text: "Thanks! Let me check that for you.",
-          delayed: true,
-        },
-      ]);
-      setIsTyping(false);
-    }, 1500);
+      let i = 0;
+  
+      const typeNextChar = () => {
+        if (i < characters.length) {
+          currentText += characters[i];
+          i++;
+  
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === msgId
+                ? { ...msg, isTyping: false, text: currentText }
+                : msg
+            )
+          );
+  
+          setTimeout(typeNextChar, 30);
+        }
+      };
+  
+      typeNextChar();
+    }, 400);
   };
-
+    
   const handleKeyPress = e => {
     if (e.key === 'Enter') handleSend();
   };
@@ -44,7 +64,7 @@ const ChatScreen = ({ onEndChat, darkMode }) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isTyping]);
+  }, [messages]);
 
   return (
     <div className={`chat-screen ${darkMode ? 'dark' : ''}`}>
@@ -66,7 +86,7 @@ const ChatScreen = ({ onEndChat, darkMode }) => {
           >
             {msg.isTyping ? (
               <span className="typing-dots">
-                <span>.</span><span>.</span><span>.</span>
+                <span></span><span></span><span></span>
               </span>
             ) : (
               msg.text
