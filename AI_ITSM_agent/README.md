@@ -126,7 +126,7 @@ LLM Role in the System 
 Workflow (Step-by-Step Use Case) 
 1. User packs an order at a bench and clicks “Pack”. 
 2. System sends API request to the Carrier Management System (CMS). 
-3. CMS response failure triggers the AI ITSM Analyst. 
+3. In case of failure, user triggers message to AI ITSM Analyst. 
 4. LLM detects known issue (Invalid postcode, Null payload, Hazmat). 
 5. LLM suggests action (e.g., correct postcode, repack, check SKU hazmat). 
 6. If fixed, AI closes the case. 
