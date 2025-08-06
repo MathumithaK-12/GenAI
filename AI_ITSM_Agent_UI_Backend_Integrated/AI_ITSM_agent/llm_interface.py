@@ -120,7 +120,7 @@ We identified an issue with the provided order or container.
 
 The workaround is: "{workaround_text}".
 
-Write a helpful, polite message suggesting this workaround to the user as if you're a friendly support chatbot. Keep is short and precise. Reply with workaround deterministically as it is a known issue. Be polite.
+Write a helpful, polite message suggesting this workaround to the user as if you're a friendly support chatbot. Keep is short and precise. Reply with workaround deterministically as it is a known issue. Be polite. Also ask to check if the workaround worked.
 """
     return ask_llm(prompt)
 
@@ -166,3 +166,32 @@ Classify this response into one of the following categories:
 Respond with only one word: success, failure, or unclear.
 """
     return ask_llm(prompt).strip().lower()
+
+
+
+def classify_issue_intent(message: str) -> str:
+    """
+    Use LLM to classify the message and map to one of the agent types.
+    """
+    prompt = f"""Classify the user's issue into one of the following categories:
+- itsm: Only Packing or label or postcode related issues.
+- location: Location-related issues
+- health: Health check or system monitoring
+- user: User account creation or access issues or user related issues or user account issues
+- hsm: HSM code-related issues
+- design: Design or workflow queries
+
+If the message is unclear or not enough to classify, respond ONLY with: unknown
+
+User message: "{message}" 
+
+Respond with only one keyword: itsm, location, health, user, hsm, or design.
+
+Answer:""".strip()
+
+    response = ask_llm(prompt)  # Use your LLM calling function
+    classification = response.strip().lower()
+
+    allowed = {"itsm", "location", "health", "user", "hsm", "design"}
+    return classification if classification in allowed else "unknown"
+
