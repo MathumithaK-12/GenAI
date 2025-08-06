@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent import run_itsm_agent, session_store
+from llm_interface import classify_issue_intent
 
 app = FastAPI()
 
@@ -32,3 +33,13 @@ async def end_chat(request: Request):
     if session_id and session_id in session_store:
         del session_store[session_id]
     return {"status": "chat ended"}
+
+
+class MessageInput(BaseModel):
+    message: str
+
+@app.post("/classify_intent")
+def classify_intent(input: MessageInput):
+    message = input.message
+    agent_type = classify_issue_intent(message)  # e.g., returns 'itsm', 'location', etc.
+    return {"agent_type": agent_type}
