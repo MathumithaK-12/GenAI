@@ -51,8 +51,7 @@ class AgentTypeRequest(BaseModel):
 async def generate_intro(req: AgentTypeRequest):
     agent_name = req.agent_type.replace("_", " ").title()
     prompt = f"""
-You are a helpful assistant designed to assist with {req.agent_type} issues.
-You are acting as the "{agent_name}" support assistant.
+You are acting as the "{agent_name}" helpful support assistant.
 
 Introduce yourself clearly by saying something like "Hi, I'm your {agent_name} Agent" or similar. Make the tone friendly and helpful.
 
