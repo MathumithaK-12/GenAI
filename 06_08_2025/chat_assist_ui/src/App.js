@@ -72,11 +72,11 @@ function App() {
         <main className="main-content">
           <div className="prompt-text">How can I help you today?</div>
           <div className="button-group">
-            <button className="rounded-button" onClick={() => handleStartChat('itsm')}>Pack ITSM Assist</button>
-            <button className="rounded-button" onClick={() => handleStartChat('health')}>Health Check Assist</button>
-            <button className="rounded-button" onClick={() => handleStartChat('hsn')}>HSN Code Assist</button>
+            <button className="rounded-button" onClick={() => handleStartChat('pack_itsm')}>Pack ITSM Assist</button>
+            <button className="rounded-button" onClick={() => handleStartChat('health_check')}>Health Check Assist</button>
+            <button className="rounded-button" onClick={() => handleStartChat('hsn_code')}>HSN Code Assist</button>
             <button className="rounded-button" onClick={() => handleStartChat('location')}>Location Assist</button>
-            <button className="rounded-button" onClick={() => handleStartChat('user')}>User Creation Assist</button>
+            <button className="rounded-button" onClick={() => handleStartChat('user_account')}>User Creation Assist</button>
             <button className="rounded-button" onClick={() => handleStartChat('design')}>Design Assist</button>
           </div>
           <div className="prechat-input-wrapper">
