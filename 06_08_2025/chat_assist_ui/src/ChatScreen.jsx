@@ -21,7 +21,7 @@ const ChatScreen = ({ onEndChat, darkMode, assistType, autoInitiate }) => {
 
     if (showWelcome) setShowWelcome(false);
 
-    if (assistType !== 'itsm') {
+    if (assistType !== 'pack_itsm') {
       const unsupportedMsg = {
         sender: 'assistant',
         text: `Sorry, ${assistType} assistant is not yet supported.`,
@@ -99,20 +99,66 @@ const ChatScreen = ({ onEndChat, darkMode, assistType, autoInitiate }) => {
           const response = await fetch(`${API_URL}/generate_intro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ agent_type: assistType })
+            body: JSON.stringify({ agent_type: assistType }),
           });
+  
           const data = await response.json();
           const introMessage = data.intro_message || "Hello, how can I help you today?";
-          setMessages([{ sender: "bot", text: introMessage }]); // Inject LLM-generated intro
-        } catch (error) {
-          console.error("Failed to fetch LLM intro:", error);
-          setMessages([{ sender: "bot", text: "Hi, I’m your assistant. How can I help you today?" }]);
+  
+          const msgId = Date.now();
+  
+          // Phase 1: Show typing dots (isTyping = true, no text)
+          const typingPlaceholder = {
+            id: msgId,
+            sender: 'assistant',
+            text: '',
+            isTyping: true,
+          };
+          setMessages([typingPlaceholder]);
+          setIsTyping(true);
+  
+          // Wait 1.2s to simulate thinking time before cascading
+          setTimeout(() => {
+            const characters = introMessage.split('');
+            const textRef = { current: '' };
+            let index = 0;
+  
+            const typeChar = () => {
+              if (index < characters.length) {
+                textRef.current += characters[index];
+                index++;
+  
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === msgId
+                      ? {
+                          ...msg,
+                          text: textRef.current,
+                          isTyping: false, // remove dots once cascading starts
+                        }
+                      : msg
+                  )
+                );
+  
+                setTimeout(typeChar, 20);
+              } else {
+                setIsTyping(false); // done typing
+              }
+            };
+  
+            typeChar();
+          }, 1200); // Delay before replacing dots with cascading message
+        } catch (err) {
+          console.error('Intro fetch failed:', err);
+          setMessages([{ sender: 'assistant', text: 'Hi, I’m your assistant. How can I help you today?' }]);
+          setIsTyping(false);
         }
       };
   
       getLLMIntro();
     }
-  }, [autoInitiate, assistType]); 
+  }, [autoInitiate, assistType]);
+    
   
   return (
     <div className={`chat-screen ${darkMode ? 'dark' : ''}`}>
