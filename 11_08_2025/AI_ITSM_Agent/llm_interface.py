@@ -171,7 +171,35 @@ Respond with only one word: success, failure, or unclear.
 """
     return ask_llm(prompt).strip().lower()
 
+def user_confirmation(reply_text):
+    text = reply_text.strip().lower()
 
+    # Directly handle simple yes/no without LLM
+    if text in ["no", "nope", "nah"]:
+        return "issue_resolved"
+    if text in ["yes", "yeah", "yep", "still", "yes it persists"]:
+        return "issue_persists"
+
+    
+    prompt = f"""
+You are an IT service assistant. You asked the user whether they still notice an issue with their order.
+They replied with:
+
+"{reply_text}"
+
+Classify this response into one of the following categories:
+
+- issue_persists: user says YES or confirms the issue continues (e.g., "yes", "still happening")
+- issue_resolved: user says NO or confirms the issue is gone (e.g., "no", "it's fixed", "not happening anymore")
+- unclear: if the reply is ambiguous
+
+Respond with only one word: issue_persists, issue_resolved, or unclear.
+"""
+    result = ask_llm(prompt).strip().lower()
+    if result in ["issue_persists", "issue_resolved", "unclear"]:
+        return result
+    else:
+        return "unclear"
 
 def classify_issue_intent(message: str) -> str:
     """
