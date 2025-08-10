@@ -137,14 +137,8 @@ def phrase_workaround(workaround_text, issue_type):
     return ask_llm(prompt)
 
 
-def draft_email_content(issue_summary, order_id=None, container_id=None):
+def draft_email_content(issue_summary):
     """Generate escalation email using LLM."""
-    id_lines = []
-    if order_id:
-        id_lines.append(f"Order ID: {order_id}")
-    if container_id:
-        id_lines.append(f"Container ID: {container_id}")
-    ids = "\n".join(id_lines) if id_lines else "No ID provided."
 
     prompt = f"""
 You're an IT support agent. Draft a professional escalation email.
@@ -152,10 +146,8 @@ You're an IT support agent. Draft a professional escalation email.
 Issue summary:
 {issue_summary}
 
-Identifiers:
-{ids}
 
-Keep it short, simple, formal, and clear. End with a request for IT to investigate and resolve. Do ask to reach out to the flow room/user fr further details. Just add Best Regards, IT Support Agent at end.
+No need to include any subject. Do not place any generic placeholders and do not say that this is a drafted mail or something similar. Keep it short, simple, formal, and clear. End with a request for IT team to investigate and resolve. Do ask IT team to reach out to the flow room/user for further details related to the issue. Just add Best Regards, IT Support Agent at end.
 """
     return ask_llm(prompt)
 
