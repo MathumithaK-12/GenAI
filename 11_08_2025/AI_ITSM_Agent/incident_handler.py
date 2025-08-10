@@ -7,7 +7,8 @@ from llm_interface import (
     interpret_user_confirmation,
     detect_intent,
     handle_greeting,
-    handle_thanks
+    handle_thanks,
+    user_confirmation
 
 )
 
@@ -114,16 +115,16 @@ def handle_user_message(user_input, session_state):
     # Later, when user replies and confirmation expected:
     if session_state.get("awaiting_success_confirmation"):
         incident_id = session_state.get("incident_id") 
-        confirmation = interpret_user_confirmation(user_input)  # This must return True/False
+        confirmation = user_confirmation(user_input)  
 
-        if confirmation == "success":
+        if confirmation == "issue_persists":
             if not incident_id:
                 incident_id = log_incident(order_id, container_id, "User confirmed issue despite success status")
                 session_state["incident_id"] = incident_id
-        # Update incident before escalation
+            # Update incident before escalation
             update_incident_status(incident_id, "Open")
         
-        # Always send escalation email after confirmation
+            # Always send escalation email after confirmation
             subject = f"Escalation Request: Issue despite success response {order_id or container_id}"
             summary = (
                 f"The incident with order/container ({order_id or container_id}) has successful response from CMS, "
@@ -139,11 +140,11 @@ def handle_user_message(user_input, session_state):
 
             return "I've escalated this to IT and sent them an email.\n\n" + email_body, session_state
 
-        elif confirmation == "failure":
+        elif confirmation == "issue_resolved":
             # No escalation
             session_state["awaiting_success_confirmation"] = False
             update_incident_status(incident_id, "Closed")
-            return "Okay, I will close this incident."
+            return "Okay, I will close this incident.", session_state
 
         else:
             # unclear, ask again politely
@@ -167,7 +168,7 @@ def handle_user_message(user_input, session_state):
                 f"Issue reported for Order {order_id or ''} / Container {container_id or ''}. "
                 "No known pattern matched."
             )
-            email_body = draft_email_content(summary, response_payload)
+            email_body = draft_email_content(summary)
             session_state["status"] = "EscalatedToIT"
             return (
                 "I'm unable to resolve this with known workarounds. I've escalated the issue to our IT team. "
