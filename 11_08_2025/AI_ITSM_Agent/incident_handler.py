@@ -124,11 +124,11 @@ def handle_user_message(user_input, session_state):
             update_incident_status(incident_id, "Open")
         
         # Always send escalation email after confirmation
-            subject = f"Escalation Request: Successful completion for {order_id or container_id}"
+            subject = f"Escalation Request: Issue despite success response {order_id or container_id}"
             summary = (
-                f"The incident with order/container ({order_id or container_id}) has completed successfully, "
-                "but the user has requested escalation for further review.\n\n"
-                "Incident ID: {incident_id}\n"
+                f"The incident with order/container ({order_id or container_id}) has successful response from CMS, "
+                "but the user still faces issue with process the order / container and has requested escalation for further review.\n\n"
+                f"Incident ID: {incident_id}\n"
                 "Please investigate potential underlying issues."
             )
             email_body = draft_email_content(summary)
@@ -137,7 +137,7 @@ def handle_user_message(user_input, session_state):
             session_state["awaiting_success_confirmation"] = False
             session_state["status"] = "EscalatedToIT"
 
-            return "I've escalated this to IT and sent them an email.", session_state
+            return "I've escalated this to IT and sent them an email.\n\n" + email_body, session_state
 
         elif confirmation == "failure":
             # No escalation
@@ -190,15 +190,13 @@ def handle_user_confirmation(user_input, session_state):
 
     elif result == "failure":
         update_incident_status(session_state["incident_id"], "Open")
+        subject = f"Escalation Request: Workaround failed for {session_state['order_id'] or session_state['container_id']}"
         summary = (
-            f"User confirmed workaround failed for Order {session_state['order_id'] or ''} / "
-            f"Container {session_state['container_id'] or ''}."
+            f"User confirmed workaround failed for Order / Container - {session_state['order_id'] or session_state['container_id']}."
+            f"The incident is been tracked under Incident ID: {session_state['incident_id']}"
         )
         email_body = draft_email_content(summary)
-        send_email_to_it(
-        subject="Escalation: Order/Container Issue",
-        body=email_body
-        )
+        send_email_to_it(subject,body=email_body)
         session_state["status"] = "EscalatedToIT"
         session_state["awaiting_user_confirmation"] = False
         return (
