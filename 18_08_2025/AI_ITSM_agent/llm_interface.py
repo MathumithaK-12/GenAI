@@ -34,6 +34,7 @@ def detect_intent(user_input: str) -> str:
     - new_issue: user explicitly wants to log a new issue/incident
     - summary: user asks for summary/status/details of an order/container/incident
     - normal (default): user directly reports an issue (e.g., 'issue with packing', 'label not printing')
+    Uses LLM but falls back on keyword matching for better summary detection.
     """
     prompt = (
         "Classify the following message into one of these intents: "
@@ -45,9 +46,15 @@ def detect_intent(user_input: str) -> str:
     response = ask_llm(prompt)
     intent = response.strip().lower()
 
-    if intent in ["greeting", "thanks", "new_issue", "end_of_convo", "summary"]:
-        return intent
-    return "normal"
+    if intent not in ["greeting", "thanks", "new_issue", "end_of_convo", "summary"]:
+        intent = "normal"
+    
+    # --- Keyword-based enhancement for summary detection ---
+    summary_keywords = ["status", "check", "incident", "summary", "report", "details", "progress"]
+    if any(kw in user_input.lower() for kw in summary_keywords):
+        intent = "summary"
+
+    return intent
 
 
 def handle_greeting():
