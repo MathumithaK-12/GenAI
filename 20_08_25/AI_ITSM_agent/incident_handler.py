@@ -108,11 +108,23 @@ def _handle_summary_request(session_state: Dict[str, Any],
         incident_row = all_incidents[0]
         incident_id = incident_row["incident_id"]
 
+    # --- NEW PART: enrich with cms + failure ---
+    cms_log = get_latest_log(order_id=order_id, container_id=container_id)
+    issue_summary, workaround = None, None
+    if cms_log:
+        failure = find_known_failure_match(cms_log["response_xml"])
+        if failure:
+            issue_summary = failure["failure_type"]
+            workaround = failure["workaround"]    
+
     facts = {
         "incident_id": incident_id,
         "incident_status": incident_row.get("status") if incident_row else "Unknown",
         "order_id": order_id,
         "container_id": container_id,
+        "incident_created_at": incident_row.get("created_at") if incident_row else None,
+        "issue_summary": issue_summary,
+        "workaround": workaround
     }
 
     session_state["last_summary_incident_id"] = incident_id
