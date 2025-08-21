@@ -169,7 +169,7 @@ Issue summary:
 {issue_summary}
 
 
-No need to include any subject. Do not place any generic placeholders and do not say that this is a drafted mail or something similar. Keep it short, simple, formal, and clear. End with a request for IT team to investigate and resolve. Do ask IT team to reach out to the flow room/user for further details related to the issue. Just add Best Regards, IT Support Agent at end.
+No need to include subject in the mail body . Do not say anything like drafted mail or similar(e.g. do not mention Here is the draft email:). Do not place any generic placeholders. Keep it short, simple, formal, and clear. End with a request for IT team to investigate and resolve. Do ask IT team to reach out to the flow room/user for further details related to the issue. Just add Best Regards, IT Support Agent at end.
 """
     return ask_llm(prompt)
 
@@ -271,9 +271,13 @@ def draft_summary_message(facts: dict) -> str:
       cms_last_status, cms_last_time
     """
     prompt = f"""
-Compose a concise, human-friendly summary from this JSON.
+Compose a clear, neat and human-friendly summary from this JSON.
 Prefer Incident info if available; otherwise summarize latest CMS log.
 If there is no incident, mention that briefly but still state the latest CMS status if present.
+Provide brief note on what was the issue and what was the suggested workaround, if none, mention as unknown
+If status is Open, let the user know that the provided workaround doesn't resolved the issue , so it has been esculated to IT. 
+If status is In Progress, let the user know the incident needs confirmation from user.
+If status is Resolved, let the user know that the issue occured has been resolved by the suggested workaround and got the confirmation from user.
 
 JSON:
 {json.dumps(facts, default=str)}
